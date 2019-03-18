@@ -19,10 +19,10 @@ listings.
 
 ** Project structure / app architecture
 
-- Some exploratory artifacts are found in [[./artifacts][~/artifacts~]].
-- Front-end code is in [[./src][~/src~]]
-- Application logic is in [[./lib/services][~/lib/services~]]
-- Web app logic is in [[./lib/web][~/lib/web~]]
+- Some exploratory artifacts are found in [[./artifacts][/artifacts]].
+- Front-end code is in [[./src][/src]]
+- Application logic is in [[./lib/services][/lib/services]]
+- Web app logic is in [[./lib/web][/lib/web]]
 
 ** Configuration
 
@@ -36,7 +36,7 @@ Copy .env.example and source, adjusting as necessary and populating the value of
 
 ** Command-line script
 
-Issue the following to source data for analysis in the [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][jupyter notebook in ~./artifacts/~]].
+Issue the following to source data for analysis in the [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][jupyter notebook in /artifacts]].
 
 #+begin_src shell
 python artifacts/save_listings_to_csv.py
@@ -51,6 +51,16 @@ python artifacts/save_listings_to_csv.py
 ** Web app
 
 To run the app locally, issue ~flask run~ from the project root.
+
+** Implementation notes
+
+- To minimize latency, the Etsy API query code makes requests in parallel
+- The notion of a "meaningful term" is operationalized as most commonly
+  occurring non-stop-words. A naive approach using a simple count across
+  the entire corpus was [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][initially explored]]. The TF-IDF vectorizer
+  down-weights words common across many descriptions but not explicitly
+  excluded as stop words, and runs with acceptable performance on data of this
+  size.
 
 ** Tour
 
@@ -170,8 +180,8 @@ def compute_key_terms(corpus: list, number: int = 5) -> tuple:
 
 Some tasks punted on due to the timebox on this exercise:
 
-- Augment test suites (front- and back-end)
+- Augment the test suites (front- and back-end)
 - Stem key terms so, for example, 'game' and 'games' are counted as the same term
-- Refactor to search for store names by a search string
-- Update result list styling to include the store's avatar, description
+- Re-implement the store name search to query the Etsy API by a search string
+- Update result list styling to include the store's avatar, description, other useful info
 - Cache invalidation
