@@ -7,6 +7,22 @@ listings.
 
 [[https://circleci.com/gh/jmromer/shop_listings/tree/master][https://circleci.com/gh/jmromer/shop_listings/tree/master.svg?style=svg]]
 
+** Table of contents                                                   :TOC:
+- [[#etsy-shop-listings-analyzer][etsy shop listings analyzer]]
+  - [[#dependencies][Dependencies]]
+  - [[#project-structure--app-architecture][Project structure / app architecture]]
+  - [[#configuration][Configuration]]
+  - [[#command-line-script][Command-line script]]
+  - [[#web-app][Web app]]
+  - [[#implementation-notes][Implementation notes]]
+  - [[#tour][Tour]]
+    - [[#flask-endpoint][Flask endpoint]]
+    - [[#coordinator-service][Coordinator service]]
+    - [[#data-sourcing--api-integration][Data sourcing / API integration]]
+    - [[#meaningful-terms-extaction-using-tf-idf-vectorizer][Meaningful terms extaction using TF-IDF vectorizer]]
+  - [[#demo][Demo]]
+  - [[#wip][WIP]]
+
 ** Dependencies
 - python 3.7 (anaconda3-2018.12)
 - nodejs 10.15.3
@@ -23,6 +39,8 @@ listings.
 - Front-end code is in [[./src][/src]]
 - Application logic is in [[./lib/services][/lib/services]]
 - Web app logic is in [[./lib/web][/lib/web]]
+- Python tests are in [[./tests][/tests]] and JavaScript tests are co-located
+  with their implementation files.
 
 ** Configuration
 
@@ -47,7 +65,6 @@ python artifacts/save_listings_to_csv.py
 # INFO:EtsyShop:[AgnesHart] Requesting active listings page: 3
 #+end_src
 
-
 ** Web app
 
 To run the app locally, issue ~flask run~ from the project root.
@@ -55,12 +72,13 @@ To run the app locally, issue ~flask run~ from the project root.
 ** Implementation notes
 
 - To minimize latency, the Etsy API query code makes requests in parallel
-- The notion of a "meaningful term" is operationalized as most commonly
-  occurring non-stop-words. A naive approach using a simple count across
-  the entire corpus was [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][initially explored]]. The TF-IDF vectorizer
-  down-weights words common across many descriptions but not explicitly
-  excluded as stop words, and runs with acceptable performance on data of this
-  size.
+- The notion of a "meaningful term" is operationalized as "most commonly
+  occurring semantically significant non-stop-words." A naive approach using a
+  simple count across the entire corpus was [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][initially explored]].
+- The [[https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction][TF-IDF vectorizer]] down-weights words common across the entire corpus,
+  but not explicitly excluded as stop words, highlighting the more "semantically
+  significant" words in listing text documents. The vectorizer runs with
+  acceptable performance on data of this size.
 
 ** Tour
 
