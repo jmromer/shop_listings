@@ -51,5 +51,110 @@ python artifacts/save_listings_to_csv.py
 
 To run the app locally, issue ~flask run~ from the project root.
 
+** Tour
+
+*** Endpoint
+
+#+BEGIN_SRC python
+# lib/web/routes.py L51-73
+
+@app.route('/key-terms', methods=['GET'])
+def key_terms():
+    """
+    Source listings and return meaningful terms for the given `shop_name`,
+    perform the analysis if necessary, returning cached values if available.
+    """
+    shop_names = request.args.get('q')
+    if not shop_names:
+        resp = jsonify({'error': 'missing query string'})
+        return make_response(resp, 422)
+
+    results = []
+    for shop_name in shop_names.split(','):
+        result = perform_analysis(
+            shop_name,
+            logger=app.logger,
+            log_level=LOG_LEVEL,
+            etsy_api_key=ETSY_API_KEY,
+            max_number_of_terms=MAX_NUMBER_OF_TERMS,
+            redis_store=redis_store)
+        results.append(result)
+
+    return jsonify({'results': results})
+#+END_SRC
+
+#+BEGIN_SRC python
+# lib/services/shop_listings_analysis.py L42-52
+
+# source listings from the etsy api
+shop = EtsyShop(
+    name=shop_name,
+    log_level=log_level,
+    api_key=etsy_api_key,
+    logger=logger,
+).get_active_listings()
+
+# determine key terms across the corpus of listing text
+corpus = [f"{l['title']} {l['description']}" for l in shop.listings]
+key_terms = compute_key_terms(corpus, number=max_number_of_terms)
+#+END_SRC
+
+#+BEGIN_SRC python
+# lib/services/etsy_shop.py L54-79
+
+def get_active_listings(self) -> 'EtsyShop':
+    """
+    Query the Etsy API for this shop's active listings.
+    Side effect: Populates `self.listings`.
+    Return self.
+    """
+    if self.listings:
+        return self
+
+    # Get first page of listings
+    request = self._initiate_request(page_num=1)
+    self._process_response(request, page_num=1)
+
+    if self.total_pages == 1:
+        return self
+
+    # Initialize parallel requests for subsequent pages
+    requests = {
+        page_num: self._initiate_request(page_num)
+        for page_num in range(2, self.total_pages + 1)
+    }
+
+    for page_num, request in requests.items():
+        self._process_response(request, page_num)
+
+    return self
+#+END_SRC
+
+#+BEGIN_SRC python
+# lib/services/key_terms.py L18-38
+
+def compute_key_terms(corpus: list, number: int = 5) -> tuple:
+    """
+    Determine the NUMBER (default: 5) most meaningful terms from the provided
+    list CORPUS using a TF-IDF vectorizer.
+    """
+    if not corpus:
+        return tuple()
+
+    vectorizer = TfidfVectorizer(
+        analyzer='word',
+        ngram_range=(1, 1),
+        min_df=0.1,
+        token_pattern=r'\b[a-z]{3,}\b',
+        max_features=number,
+        strip_accents='ascii',
+        lowercase=True,
+        stop_words=STOP_WORDS)
+
+    vectorizer.fit_transform(corpus)
+
+    return tuple(vectorizer.get_feature_names())
+#+END_SRC
+
 ** Demo
 [[https://user-images.githubusercontent.com/4433943/54535803-b2b14f80-4965-11e9-8321-8222d6251af8.gif]]
