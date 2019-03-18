@@ -10,7 +10,7 @@ import 'react-progress-bar-plus/lib/progress-bar.css'
 
 class App extends Component {
   state = {
-    isLoading: true,
+    isLoading: false,
     shopNames: [],
     selections: [],
     progressAutoIncrement: false,
@@ -20,40 +20,41 @@ class App extends Component {
 
   componentDidMount () {
     this.startProgress()
-
-    getShopNames().then(shopNames => {
-      this.stopProgress()
-      this.setState({ shopNames, isLoading: false })
-    })
+    getShopNames().then(shopNames => this.stopProgress({ shopNames }))
   }
 
-  startProgress = () => {
+  startProgress = state => {
     this.setState({
       progressPercent: 10,
-      progressAutoIncrement: true
+      progressAutoIncrement: true,
+      isLoading: true,
+      ...state
     })
   }
 
-  stopProgress = () => {
+  stopProgress = state => {
     this.setState({
       progressPercent: -1,
-      progressAutoIncrement: false
+      progressAutoIncrement: false,
+      isLoading: false,
+      ...state
     })
   }
 
   handleShopSelection = newSelection => {
     this.startProgress()
+
     const selectedIdx = this.state.shopNames.indexOf(newSelection)
     const shopNames = [
       ...this.state.shopNames.slice(0, selectedIdx),
       ...this.state.shopNames.slice(selectedIdx + 1)
     ]
 
+    // Poll the server for key terms for the selected shop
     getKeyTerms(newSelection.label).then(({ shop_name, key_terms }) => {
-      const selection = { shop: shop_name, terms: key_terms.join(', ') }
-      const selections = [selection, ...this.state.selections]
-      this.setState({ selections, shopNames })
-      this.stopProgress()
+      const selectedShop = { shop: shop_name, terms: key_terms.join(', ') }
+      const selections = [selectedShop, ...this.state.selections]
+      this.stopProgress({ selections, shopNames })
     })
   }
 
@@ -62,7 +63,7 @@ class App extends Component {
       <div className='App'>
         <h1>Etsy shop text analysis</h1>
         <p>
-          Select a shop to see which terms are most significant in their items'
+          Select a shop to see the most important words found in its listing
           titles and descriptions.
         </p>
 
