@@ -15,7 +15,7 @@ const KeyTermList = ({ shop, terms }) => (
         </a>
       </strong>
     </div>
-    <div>{terms.length ? terms : 'None'}</div>
+    <div>{terms.length ? terms : 'Not enough listings'}</div>
   </div>
 )
 
