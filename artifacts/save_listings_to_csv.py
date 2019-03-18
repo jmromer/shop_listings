@@ -1,15 +1,16 @@
 """
 Write shop listings data, sourced from the Etsy API, to CSV.
 """
-
 import csv
 import logging
 import os
+import sys
 
 import dotenv
 from requests_futures.sessions import FuturesSession
 
-from etsy_shop import EtsyShop
+LIB_DIR = os.path.join('lib', os.path.dirname('..'))
+sys.path.insert(0, os.path.abspath(LIB_DIR))
 
 logging.basicConfig(level=logging.INFO)
 
@@ -72,4 +73,5 @@ def write_listings_to_csv(filename: str) -> None:
 
 
 if __name__ == '__main__':
+    from services.etsy_shop import EtsyShop
     write_listings_to_csv(OUTPUT_FILE)

@@ -1,4 +1,4 @@
-import pytest
+import vcr
 
 from services.etsy_shop import EtsyShop
 
@@ -36,14 +36,15 @@ def test_active_listings_query_dict_returns_params_dict_with_defaults():
     assert query['limit'] == 25
 
 
-@pytest.mark.vcr()
 def test_get_active_listings_queries_for_all_pages_of_results():
     """listings property is set from API response as expected."""
-    shop = EtsyShop(name='DrewsTattoos', api_key='DUMMY_API_KEY')
+    cassette = 'tests/cassettes/etsy_active_listings_drews_tattoos.yml'
+    with vcr.use_cassette(cassette):
+        shop = EtsyShop(name='DrewsTattoos', api_key='DUMMY_API_KEY')
 
-    shop.get_active_listings()
+        shop.get_active_listings()
 
-    assert len(shop.listings) == 29
-    assert all(isinstance(listing, dict) for listing in shop.listings)
-    assert all('title' in listing and 'description' in listing
-               for listing in shop.listings)
+        assert len(shop.listings) == 29
+        assert all(isinstance(listing, dict) for listing in shop.listings)
+        assert all('title' in listing and 'description' in listing
+                   for listing in shop.listings)

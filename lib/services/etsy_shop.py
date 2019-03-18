@@ -23,10 +23,11 @@ class EtsyShop:
                  log_level: str = 'INFO',
                  api_max_reqs_per_sec: int = 10,
                  api_query_limit: int = 25,
+                 logger: Optional[logging.Logger] = None,
                  session: Optional[FuturesSession] = None):
         self.name = name
         self.session = session or FuturesSession()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logger or logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(getattr(logging, log_level))
 
         self.api_key = api_key
@@ -77,7 +78,7 @@ class EtsyShop:
 
         return self
 
-    def _initiate_request(self, page_num):
+    def _initiate_request(self, page_num: int) -> FuturesSession:
         template = '[%s] Requesting active listings page: %s'
         self.logger.info(template, self.name, page_num)
 
@@ -89,8 +90,9 @@ class EtsyShop:
 
         return request
 
-    def _process_response(self, request, page_num):
-        response = request.result().json()
+    def _process_response(self, request: FuturesSession,
+                          page_num: int) -> Dict[str, Any]:
+        response = self._parsed_response(request, page_num)
         self.listings.extend(response['results'])
         self.total_pages = math.ceil(response['count'] / self.api_query_limit)
 
@@ -98,11 +100,27 @@ class EtsyShop:
         self.logger.info(page_template, self.name, page_num, self.total_pages)
 
         results_template = '[%s] Received %s records'
-        self.logger.debug(results_template, self.name, len(response['results']))
+        self.logger.debug(results_template, self.name,
+                          len(response['results']))
 
         return response
 
-    def _buffer_request(self):
+    def _parsed_response(self, request: FuturesSession,
+                         page_num: int) -> Dict[str, Any]:
+        """
+        Handle Request result. If request succeeds, parse JSON.
+        Else, return a null dict and log the failure.
+        """
+        response = request.result()
+
+        if response.status_code == 200:
+            return response.json()
+
+        template = '[%s] ERROR: Request for page %s failed with status %s'
+        self.logger.info(template, self.name, page_num, response.status_code)
+        return {'results': [], 'count': 0}
+
+    def _buffer_request(self) -> None:
         """
         Sleep for the number of seconds given by self.api_request_timeout.
 

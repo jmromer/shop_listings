@@ -1,1 +1,55 @@
 * etsy shop listings analyzer
+
+#+begin_quote
+ A simple tool to extract key terms from Etsy shop listings.
+#+end_quote
+
+[[https://circleci.com/gh/jmromer/shop_listings/tree/master][https://circleci.com/gh/jmromer/shop_listings/tree/master.svg?style=svg]]
+
+** Dependencies
+- python 3.7 (anaconda3-2018.12)
+- nodejs 10.15.3
+- redis 3.2.0
+- Flask
+- React
+- sklearn
+- pytest
+- enzyme
+
+** Project structure / app architecture
+
+- Some exploratory artifacts are found in ~./artifacts/~.
+- Front-end code is in ~./src/~
+- Application logic is in ~./lib/services/~
+- Web app logic is in ~./lib/web/~
+
+** Configuration
+
+Copy .env.example and source, adjusting as necessary and populating the value of
+~ETSY_API_KEY~.
+
+#+begin_src
+% cp .env.example .env
+% source .env
+#+end_src
+
+** Command-line script
+
+Issue the following to source data for analysis in the [[https://github.com/jmromer/shop_listings/blob/master/artifacts/etsy_shops_key_terms_analysis.ipynb][jupyter notebook in ~./artifacts/~]].
+
+#+begin_src shell
+python artifacts/save_listings_to_csv.py
+
+# INFO:EtsyShop:[AgnesHart] Requesting active listings page: 1
+# INFO:EtsyShop:[AgnesHart] Received page: 1 of 5
+# INFO:EtsyShop:[AgnesHart] Requesting active listings page: 2
+# INFO:EtsyShop:[AgnesHart] Requesting active listings page: 3
+#+end_src
+
+
+** Web app
+
+To run the app locally, issue ~flask run~ from the project root.
+
+** Demo
+[[https://user-images.githubusercontent.com/4433943/54535803-b2b14f80-4965-11e9-8321-8222d6251af8.gif]]
