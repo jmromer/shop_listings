@@ -165,3 +165,13 @@ def compute_key_terms(corpus: list, number: int = 5) -> tuple:
 
 ** Demo
 [[https://user-images.githubusercontent.com/4433943/54535803-b2b14f80-4965-11e9-8321-8222d6251af8.gif]]
+
+** WIP
+
+Some tasks punted on due to the timebox on this exercise:
+
+- Augment test suites (front- and back-end)
+- Stem key terms so, for example, 'game' and 'games' are counted as the same term
+- Refactor to search for store names by a search string
+- Update result list styling to include the store's avatar, description
+- Cache invalidation
