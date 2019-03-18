@@ -1,4 +1,6 @@
-const baseUrl = ''
+import config from '../config'
+
+const serverBaseUrl = config.serverBaseUrl
 
 const jsonHeaders = {
   Accept: 'application/json',
@@ -8,7 +10,7 @@ const jsonHeaders = {
 
 const getShopNames = () => {
   return window
-    .fetch(`${baseUrl}/shop-names`, {
+    .fetch(`${serverBaseUrl}/shop-names`, {
       method: 'GET',
       headers: jsonHeaders
     })
@@ -18,7 +20,7 @@ const getShopNames = () => {
 
 const getKeyTerms = shopName => {
   return window
-    .fetch(`${baseUrl}/key-terms?q=${shopName}`, {
+    .fetch(`${serverBaseUrl}/key-terms?q=${shopName}`, {
       method: 'GET',
       headers: jsonHeaders
     })
